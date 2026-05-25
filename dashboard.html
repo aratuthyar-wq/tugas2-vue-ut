@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — SITTA | Universitas Terbuka</title>
+  <link rel="stylesheet" href="https://unpkg.com/@tabler/icons-webfont@latest/tabler-icons.min.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" />
+
+  <!-- ① CSS Eksternal -->
+  <link rel="stylesheet" href="css/style.css" />
+
+  <!-- ② CSS Internal -->
+  <style>
+    .menu-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 14px; margin-bottom: 24px;
+    }
+    .menu-card {
+      background: var(--white); border: 1.5px solid var(--gray-200);
+      border-radius: 13px; padding: 20px 18px;
+      display: flex; flex-direction: column; align-items: flex-start; gap: 12px;
+      cursor: pointer; text-decoration: none;
+      transition: transform 0.18s, box-shadow 0.18s, border-color 0.18s;
+    }
+    .menu-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,55,118,0.12); border-color: var(--blue-light); }
+    .menu-icon { width: 44px; height: 44px; border-radius: 11px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+    .menu-label { font-size: 13px; font-weight: 700; color: var(--gray-900); line-height: 1.3; }
+    .menu-sub   { font-size: 11px; color: var(--gray-400); margin-top: 2px; }
+
+    .quick-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+
+    /* Histori singkat di dashboard */
+    .recent-list { display: flex; flex-direction: column; gap: 8px; }
+    .recent-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 11px 14px; background: var(--white);
+      border: 1.5px solid var(--gray-200); border-radius: 10px;
+      transition: background 0.12s;
+    }
+    .recent-item:hover { background: var(--blue-pale); }
+    .recent-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+    .recent-info { flex: 1; }
+    .recent-id   { font-size: 12px; font-family: monospace; font-weight: 700; color: var(--blue-main); }
+    .recent-name { font-size: 13px; font-weight: 600; color: var(--gray-900); }
+    .recent-date { font-size: 11px; color: var(--gray-400); }
+
+    @media (max-width: 480px) {
+      .menu-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="topbar-brand">
+    <div class="logo-box">UT</div>
+    <div class="brand-text">
+      <span class="brand-name">SITTA</span>
+      <span class="brand-sub">Universitas Terbuka</span>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <div class="user-chip">
+      <div class="avatar" id="avatar-initial">N</div>
+      <!-- ③ Inline style contoh -->
+      <span id="user-nama" style="font-size:13px;">admin</span>
+    </div>
+    <button class="logout-btn" onclick="doLogout()" type="button">
+      <i class="ti ti-logout" style="font-size:12px;vertical-align:-1px;"></i> Keluar
+    </button>
+  </div>
+</header>
+
+<!-- NAVIGATION MENU -->
+<nav class="nav-menu" role="navigation">
+  <button class="nav-item active" id="nav-dashboard" onclick="showSection('dashboard')" type="button">
+    <i class="ti ti-layout-dashboard"></i> <span>Dashboard</span>
+  </button>
+  <a class="nav-item" href="stok.html">
+    <i class="ti ti-books"></i> <span>Informasi Bahan Ajar</span>
+  </a>
+  <a class="nav-item" href="tracking.html">
+    <i class="ti ti-truck-delivery"></i> <span>Tracking Pengiriman</span>
+  </a>
+
+  <!-- Dropdown Laporan -->
+  <div class="nav-dropdown">
+    <button class="nav-item" type="button">
+      <i class="ti ti-chart-bar"></i> <span>Laporan</span>
+      <span class="nav-caret">▾</span>
+    </button>
+    <div class="nav-dropdown-menu">
+      <a class="nav-dropdown-item" onclick="showSection('monitoring')">
+        <i class="ti ti-progress" style="margin-right:7px;"></i> Monitoring Progress DO Bahan Ajar
+      </a>
+      <a class="nav-dropdown-item" onclick="showSection('rekap')">
+        <i class="ti ti-table" style="margin-right:7px;"></i> Rekap Bahan Ajar
+      </a>
+    </div>
+  </div>
+
+  <button class="nav-item" id="nav-histori" onclick="event.preventDefault(); showSection('histori')" type="button">
+    <i class="ti ti-history"></i> <span>Histori Transaksi Bahan Ajar</span>
+  </button>
+</nav>
+
+<!-- MAIN CONTENT -->
+<main class="main-content">
+
+  <!-- ════ SECTION: DASHBOARD ════ -->
+  <section class="page-section active" id="sec-dashboard">
+    <!-- Greeting -->
+    <div class="greeting-box">
+      <div class="greeting-time" id="greeting-time">—</div>
+      <div class="greeting-text" id="greeting-text">Selamat datang!</div>
+      <div class="greeting-sub" id="greeting-sub">Dashboard Aplikasi SITTA · UT-Daerah Jakarta</div>
+    </div>
+
+    <!-- Stat Cards -->
+    <div class="stat-grid" id="stat-grid"></div>
+
+    <!-- Menu Utama -->
+    <div class="page-head" style="margin-top:4px;">
+      <h1>Menu Utama</h1>
+      <p>Pilih menu untuk mengakses fitur SITTA</p>
+    </div>
+    <div class="menu-grid">
+      <a class="menu-card" href="stok.html">
+        <div class="menu-icon" style="background:#DDEEFF;">📚</div>
+        <div>
+          <div class="menu-label">Informasi Bahan Ajar</div>
+          <div class="menu-sub">Lihat stok & data modul</div>
+        </div>
+      </a>
+      <a class="menu-card" href="tracking.html">
+        <div class="menu-icon" style="background:#E6F5EE;">📦</div>
+        <div>
+          <div class="menu-label">Tracking Pengiriman</div>
+          <div class="menu-sub">Lacak status paket DO</div>
+        </div>
+      </a>
+      <a class="menu-card" onclick="showSection('monitoring')">
+        <div class="menu-icon" style="background:#FFFBE6;">📊</div>
+        <div>
+          <div class="menu-label">Monitoring Progress DO</div>
+          <div class="menu-sub">Pantau progress delivery order</div>
+        </div>
+      </a>
+      <a class="menu-card" onclick="showSection('rekap')">
+        <div class="menu-icon" style="background:#EEF0FE;">📋</div>
+        <div>
+          <div class="menu-label">Rekap Bahan Ajar</div>
+          <div class="menu-sub">Laporan per periode</div>
+        </div>
+      </a>
+      <a class="menu-card" onclick="showSection('histori')">
+        <div class="menu-icon" style="background:#FAECE7;">🕐</div>
+        <div>
+          <div class="menu-label">Histori Transaksi Bahan Ajar</div>
+          <div class="menu-sub">Riwayat transaksi bahan ajar</div>
+        </div>
+      </a>
+    </div>
+
+    <!-- Transaksi Terbaru -->
+    <div class="page-head">
+      <h1>Transaksi Terbaru</h1>
+      <p>5 transaksi terakhir</p>
+    </div>
+    <div class="recent-list" id="recent-list"></div>
+  </section>
+
+  <!-- ════ SECTION: MONITORING DO ════ -->
+  <section class="page-section" id="sec-monitoring">
+    <div class="page-head">
+      <h1>Monitoring Progress DO Bahan Ajar</h1>
+      <p>Pantau status delivery order secara keseluruhan</p>
+    </div>
+    <div class="tbl-toolbar">
+      <input type="text" id="mon-search" placeholder="Cari No. DO atau UPBJJ…" oninput="renderMonitoring()" />
+      <span class="tbl-counter" id="mon-counter">— data</span>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>No.</th>
+            <th>Nomor DO</th>
+            <th>UPBJJ</th>
+            <th>Jumlah Modul</th>
+            <th>Status Packing</th>
+            <th>Status Kirim</th>
+            <th>Progress</th>
+          </tr>
+        </thead>
+        <tbody id="mon-body"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ════ SECTION: REKAP ════ -->
+  <section class="page-section" id="sec-rekap">
+    <div class="page-head">
+      <h1>Rekap Bahan Ajar</h1>
+      <p>Ringkasan distribusi bahan ajar per periode</p>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Periode</th>
+            <th>Total DO</th>
+            <th>Total Modul</th>
+            <th>Terkirim</th>
+            <th>Dalam Proses</th>
+            <th>Dibatalkan</th>
+            <th>% Sukses</th>
+          </tr>
+        </thead>
+        <tbody id="rekap-body"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ════ SECTION: HISTORI ════ -->
+  <section class="page-section" id="sec-histori">
+    <div class="page-head">
+      <h1>Histori Transaksi Bahan Ajar</h1>
+      <p>Riwayat seluruh transaksi distribusi bahan ajar</p>
+    </div>
+    <div class="tbl-toolbar">
+      <input type="text" id="his-search" placeholder="Cari ID, NIM, atau nama…" oninput="renderHistori()" />
+      <select id="his-status" onchange="renderHistori()">
+        <option value="">Semua Status</option>
+        <option value="selesai">Selesai</option>
+        <option value="dikirim">Dikirim</option>
+        <option value="diproses">Diproses</option>
+        <option value="batal">Dibatalkan</option>
+      </select>
+      <span class="tbl-counter" id="his-counter">— transaksi</span>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>No.</th>
+            <th>ID Transaksi</th>
+            <th>Tanggal</th>
+            <th>Nama</th>
+            <th>Paket</th>
+            <th>Jml</th>
+            <th>Status</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="his-body"></tbody>
+      </table>
+    </div>
+  </section>
+
+</main>
+
+<!-- MODAL: Konfirmasi Hapus Histori -->
+<div class="modal-overlay" id="modal-hapus" role="dialog" aria-modal="true">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-hapus')">✕</button>
+    <div class="modal-icon" style="background:var(--red-light);">🗑️</div>
+    <h3>Hapus Transaksi?</h3>
+    <p>Tindakan ini tidak dapat dibatalkan. Data transaksi akan dihapus dari histori.</p>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal('modal-hapus')" style="flex:1;" type="button">Batal</button>
+      <button id="btn-konfirm-hapus" style="flex:2; padding:10px; background:var(--red); color:#fff; border:none; border-radius:9px; font-size:13px; font-weight:700; cursor:pointer; font-family:'Plus Jakarta Sans',sans-serif;" type="button">Ya, Hapus</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/data.js"></script>
+<script>
+  /* ── Cek sesi ── */
+  const sesi = JSON.parse(sessionStorage.getItem('sitta_user') || 'null');
+  if (!sesi) window.location.href = 'index.html';
+  else {
+    document.getElementById('user-nama').textContent = sesi.nama;
+    document.getElementById('avatar-initial').textContent = sesi.nama.charAt(0);
+  }
+
+  /* ── Greeting berdasarkan waktu lokal ── */
+  function setGreeting() {
+    const jam = new Date().getHours();
+    let sapa, waktu;
+    if (jam >= 4 && jam < 11)       { sapa = 'Selamat Pagi'; waktu = '🌅 Pagi'; }
+    else if (jam >= 11 && jam < 15) { sapa = 'Selamat Siang'; waktu = '☀️ Siang'; }
+    else if (jam >= 15 && jam < 19) { sapa = 'Selamat Sore'; waktu = '🌤 Sore'; }
+    else                             { sapa = 'Selamat Malam'; waktu = '🌙 Malam'; }
+    document.getElementById('greeting-time').textContent = waktu;
+    document.getElementById('greeting-text').textContent = sapa + ', ' + (sesi ? sesi.nama : '') + '!';
+    document.getElementById('greeting-sub').textContent  = 'Dashboard Aplikasi SITTA · ' + new Date().toLocaleDateString('id-ID',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  }
+  setGreeting();
+
+  /* ── Stat Cards ── */
+  function renderStats() {
+    const totalStok   = dataBahanAjar.reduce((a,b) => a+b.stok, 0);
+    const totalDO = dataTracking.length;
+    const totalHistori= dataHistoriTransaksi.length;
+    const totalSelesai= dataHistoriTransaksi.filter(t=>t.status==='selesai').length;
+    const stats = [
+      { icon:'📚', label:'Total Bahan Ajar', value: dataBahanAjar.length + ' judul', note:'Data stok aktif', bg:'#DDEEFF' },
+      { icon:'📦', label:'Total Stok',        value: totalStok.toLocaleString('id'), note:'Seluruh lokasi', bg:'#E6F5EE' },
+      { icon:'🚚', label:'Delivery Order',    value: totalDO + ' paket', note:'Terdaftar di sistem', bg:'#FFFBE6' },
+      { icon:'✅', label:'Transaksi Selesai', value: totalSelesai + ' transaksi', note:'Dari ' + totalHistori + ' total', bg:'#EEF0FE' }
+    ];
+    const grid = document.getElementById('stat-grid');
+    grid.innerHTML = stats.map(s => `
+      <div class="stat-card">
+        <div class="stat-icon" style="background:${s.bg};">${s.icon}</div>
+        <div class="stat-info">
+          <div class="stat-label">${s.label}</div>
+          <div class="stat-value">${s.value}</div>
+          <div class="stat-note">${s.note}</div>
+        </div>
+      </div>`).join('');
+  }
+  renderStats();
+
+  /* ── Recent Transactions ── */
+  function renderRecent() {
+    const list = document.getElementById('recent-list');
+    const badges = { selesai:'badge-selesai', dikirim:'badge-dikirim', diproses:'badge-diproses', batal:'badge-batal' };
+    const labels = { selesai:'Selesai', dikirim:'Dikirim', diproses:'Diproses', batal:'Dibatalkan' };
+    const icons  = { selesai:'#E6F5EE', dikirim:'#DDEEFF', diproses:'#FFFBE6', batal:'#FEF2F2' };
+    list.innerHTML = dataHistoriTransaksi.slice(0,5).map(t => `
+      <div class="recent-item">
+        <div class="recent-icon" style="background:${icons[t.status]||'#f0f4f9'};">📋</div>
+        <div class="recent-info">
+          <div class="recent-id">${t.id}</div>
+          <div class="recent-name">${t.nama} — ${t.paket}</div>
+          <div class="recent-date">${t.tanggal}</div>
+        </div>
+        <span class="badge ${badges[t.status]||''}">${labels[t.status]||t.status}</span>
+      </div>`).join('');
+  }
+  renderRecent();
+
+  /* ── Monitoring DO ── */
+  function renderMonitoring() {
+    const q    = (document.getElementById('mon-search').value||'').toLowerCase();
+    const data = dataMonitoringDO.filter(d => !q || d.noDO.toLowerCase().includes(q) || d.upbjj.toLowerCase().includes(q));
+    document.getElementById('mon-counter').textContent = data.length + ' data';
+    const tbody = document.getElementById('mon-body');
+    if (!data.length) { tbody.innerHTML = '<tr class="tbl-empty"><td colspan="7">Tidak ada data</td></tr>'; return; }
+    tbody.innerHTML = data.map((d,i) => {
+      const pClass = d.progress === 100 ? 'done' : d.progress === 0 ? 'batal' : '';
+      return `<tr>
+        <td style="color:var(--gray-400);font-size:12px;">${i+1}</td>
+        <td style="font-family:monospace;font-size:12px;font-weight:700;color:var(--blue-main);">${d.noDO}</td>
+        <td>${d.upbjj}</td>
+        <td style="text-align:center;font-weight:700;">${d.jumlahModul}</td>
+        <td><span class="badge ${d.statusPacking==='Selesai'?'badge-selesai':'badge-diproses'}">${d.statusPacking}</span></td>
+        <td><span class="badge ${d.statusKirim==='Terkirim'?'badge-selesai':d.statusKirim==='Dibatalkan'?'badge-batal':'badge-dikirim'}">${d.statusKirim}</span></td>
+        <td style="min-width:120px;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div class="progress-wrap" style="flex:1;"><div class="progress-fill ${pClass}" style="width:${d.progress}%;"></div></div>
+            <span style="font-size:12px;font-weight:700;color:var(--gray-600);min-width:30px;">${d.progress}%</span>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+  renderMonitoring();
+
+  /* ── Rekap ── */
+  function renderRekap() {
+    document.getElementById('rekap-body').innerHTML = dataRekapBahanAjar.map(r => {
+      const pct = Math.round((r.terkirim / r.totalDO) * 100);
+      return `<tr>
+        <td style="font-weight:700;">${r.periode}</td>
+        <td style="text-align:center;">${r.totalDO}</td>
+        <td style="text-align:center;">${r.totalModul}</td>
+        <td style="text-align:center;"><span class="badge badge-selesai">${r.terkirim}</span></td>
+        <td style="text-align:center;"><span class="badge badge-dikirim">${r.proses}</span></td>
+        <td style="text-align:center;"><span class="badge badge-batal">${r.batal}</span></td>
+        <td style="text-align:center;font-weight:700;color:var(--green);">${pct}%</td>
+      </tr>`;
+    }).join('');
+  }
+  renderRekap();
+
+  /* ── Histori Transaksi ── */
+  let hapusTargetId = null;
+  let historiData   = [...dataHistoriTransaksi];
+
+  function renderHistori() {
+    const q  = (document.getElementById('his-search').value||'').toLowerCase();
+    const st = document.getElementById('his-status').value;
+    const filtered = historiData.filter(t => {
+      const mQ = !q || t.id.toLowerCase().includes(q) || t.nim.includes(q) || t.nama.toLowerCase().includes(q);
+      return mQ && (!st || t.status === st);
+    });
+    document.getElementById('his-counter').textContent = filtered.length + ' transaksi';
+    const tbody = document.getElementById('his-body');
+    const badges = { selesai:'badge-selesai', dikirim:'badge-dikirim', diproses:'badge-diproses', batal:'badge-batal' };
+    const labels = { selesai:'Selesai', dikirim:'Dikirim', diproses:'Diproses', batal:'Dibatalkan' };
+    if (!filtered.length) { tbody.innerHTML = '<tr class="tbl-empty"><td colspan="9">Tidak ada data</td></tr>'; return; }
+    tbody.innerHTML = filtered.map((t,i) => `
+      <tr>
+        <td style="color:var(--gray-400);font-size:12px;">${i+1}</td>
+        <td style="font-family:monospace;font-size:11px;font-weight:700;color:var(--blue-main);">${t.id}</td>
+        <td style="color:var(--gray-600);font-size:12px;">${t.tanggal}</td>
+        <td style="font-weight:600;">${t.nama}</td>
+        <td style="font-size:12px;max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${t.paket}</td>
+        <td style="text-align:center;font-weight:700;">${t.jumlah}</td>
+        <td><span class="badge ${badges[t.status]||''}">${labels[t.status]||t.status}</span></td>
+        <td><button class="btn-danger" onclick="konfirmasiHapus('${t.id}')" type="button">🗑 Hapus</button></td>
+      </tr>`).join('');
+  }
+  renderHistori();
+
+  function konfirmasiHapus(id) {
+    hapusTargetId = id;
+    openModal('modal-hapus');
+    document.getElementById('btn-konfirm-hapus').onclick = function() {
+      historiData = historiData.filter(t => t.id !== hapusTargetId);
+      closeModal('modal-hapus');
+      renderHistori();
+      renderRecent();
+    };
+  }
+
+  /* ── Section navigation ── */
+  function showSection(name) {
+    document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('sec-' + name).classList.add('active');
+    const navEl = document.getElementById('nav-' + name);
+    if (navEl) navEl.classList.add('active');
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+
+  /* ── Modal ── */
+  function openModal(id)  { document.getElementById(id).classList.add('open'); }
+  function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+  document.querySelectorAll('.modal-overlay').forEach(el => {
+    el.addEventListener('click', function(e) { if (e.target===this) this.classList.remove('open'); });
+  });
+
+  /* ── Logout ── */
+  function doLogout() {
+    if (confirm('Yakin ingin keluar dari SITTA?')) {
+      sessionStorage.removeItem('sitta_user');
+      window.location.href = 'index.html';
+    }
+  }
+</script>
+</body>
+</html>

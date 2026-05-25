@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tracking Pengiriman — SITTA | Universitas Terbuka</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" />
+  <link rel="stylesheet" href="css/style.css" />
+
+  <style>
+    .nav-menu   { top: 72px !important; }
+    .track-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
+    .search-card { background: var(--white); border: 1.5px solid var(--gray-200); border-radius: 13px; padding: 22px; margin-bottom: 20px; }
+    .search-card h2 { font-size: 16px; font-weight: 700; color: var(--gray-900); margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
+    .search-card p { font-size: 13px; color: var(--gray-400); margin-bottom: 16px; }
+    .do-input-row { display: flex; gap: 10px; }
+    .do-input-row input { flex: 1; padding: 12px 14px; border: 1.5px solid var(--gray-200); border-radius: 9px; font-size: 14px; font-family: inherit; outline: none; transition: border-color 0.15s; }
+    .do-input-row input:focus { border-color: var(--blue-main); }
+    .do-input-row input::placeholder { color: var(--gray-400); }
+    .do-hint { font-size: 11px; color: var(--gray-400); margin-top: 8px; }
+    .do-hint span { font-family: monospace; background: var(--gray-100); padding: 2px 6px; border-radius: 4px; cursor: pointer; color: var(--blue-main); font-weight: 600;}
+    .form-grid-do { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+    .form-group-do { display: flex; flex-direction: column; gap: 5px; }
+    .form-group-do label { font-size: 12px; font-weight: 600; color: var(--gray-600); }
+    .form-group-do input, .form-group-do select { padding: 10px; border: 1.5px solid var(--gray-200); border-radius: 8px; font-size: 13px; outline: none; font-family: inherit;}
+    .form-group-do input:focus, .form-group-do select:focus { border-color: var(--blue-main); }
+    .detail-paket-box { grid-column: span 2; background: #f0f7ff; border-left: 4px solid var(--blue-main); padding: 12px; border-radius: 8px; font-size: 12px; color: var(--gray-900); }
+    
+    /* Perbaikan Logo untuk HP */
+    .logo-image { height: 44px; border-radius: 8px; object-fit: contain; }
+
+    @media (max-width: 768px) {
+      .track-layout, .form-grid-do { grid-template-columns: 1fr; }
+      .detail-paket-box { grid-column: span 1; }
+      .nav-menu { top: 58px !important; }
+      .logo-image { height: 34px; } /* Logo otomatis mengecil di HP */
+    }
+  </style>
+</head>
+<body>
+
+<div id="tracking-app">
+  <header class="topbar">
+    <div class="topbar-brand">
+      <img src="img/logo-ut.png" alt="Logo UT" class="logo-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+      <div class="logo-box" style="display: none;">UT</div>
+      <div class="brand-text">
+        <span class="brand-name">SITTA</span>
+        <span class="brand-sub">Universitas Terbuka</span>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="user-chip">
+        <div class="avatar" id="avatar-initial"></div>
+        <span id="user-nama" style="font-size:13px;">...</span>
+      </div>
+      <button class="logout-btn" @click="doLogout" type="button">
+        <i class="ti ti-logout" style="font-size:12px;vertical-align:-1px;"></i> Keluar
+      </button>
+    </div>
+  </header>
+
+  <nav class="nav-menu" role="navigation">
+    <a class="nav-item" href="dashboard.html"><i class="ti ti-layout-dashboard"></i> <span>Dashboard</span></a>
+    <a class="nav-item" href="stok.html"><i class="ti ti-books"></i> <span>Informasi Bahan Ajar</span></a>
+    <a class="nav-item active" href="tracking.html"><i class="ti ti-truck-delivery"></i> <span>Tracking Pengiriman</span></a>
+    <div class="nav-dropdown">
+      <button class="nav-item" type="button">
+        <i class="ti ti-chart-bar"></i> <span>Laporan</span><span class="nav-caret">▾</span>
+      </button>
+      <div class="nav-dropdown-menu">
+        <a class="nav-dropdown-item" href="dashboard.html?section=monitoring"><i class="ti ti-progress"></i> Monitoring Progress DO</a>
+        <a class="nav-dropdown-item" href="dashboard.html?section=rekap"><i class="ti ti-table"></i> Rekap Bahan Ajar</a>
+      </div>
+    </div>
+    <a class="nav-item" href="dashboard.html?section=histori"><i class="ti ti-history"></i> <span>Histori Transaksi Bahan Ajar</span></a>
+  </nav>
+
+  <main class="main-content">
+    <div class="page-head">
+      <h1>Tracking & Input Delivery Order (DO)</h1>
+      <p>Manajemen dan pelacakan status pengiriman bahan ajar berbasis <code style="font-size:12px;background:var(--gray-100);padding:2px 6px;border-radius:4px;">Vue.js</code></p>
+    </div>
+
+    <div class="track-layout" style="grid-template-columns: 1.1fr 0.9fr; margin-bottom: 24px;">
+      
+      <div class="search-card" style="margin-bottom: 0;">
+        <h2><i class="ti ti-search" style="color:var(--blue-main);"></i>Lacak Pengiriman</h2>
+        <p>Masukkan Nomor Delivery Order (DO) untuk melacak paket secara *real-time*</p>
+        <div class="do-input-row">
+          <input type="text" v-model="searchQuery" placeholder="Masukkan No. DO (Contoh: DO2025-0001)" @keydown.enter="cariDO" />
+          <button class="btn-primary" @click="cariDO" type="button">
+            <i class="ti ti-search"></i> Cari
+          </button>
+        </div>
+        <p class="do-hint">
+          Nomor DO Terdaftar: 
+          <span v-for="(data, key) in tracking" :key="key" @click="searchQuery = key; cariDO()" style="margin-right: 5px;" title="Klik untuk melacak">
+            {{ key }}
+          </span>
+        </p>
+      </div>
+
+      <div class="search-card" style="margin-bottom: 0; border-left: 4px solid var(--green);">
+        <h2 style="color: var(--green);"><i class="ti ti-plus"></i>Input Delivery Order Baru</h2>
+        <p>Gunakan formulir ini untuk memproses entri log distribusi order baru</p>
+        
+        <form @submit.prevent="tambahDO">
+          <div class="form-grid-do">
+            <div class="form-group-do">
+              <label>Nomor DO</label>
+              <input type="text" value="(Di-generate Otomatis)" disabled style="background: var(--gray-100); font-weight: bold; color: var(--gray-500); text-align: center;" />
+            </div>
+            <div class="form-group-do">
+              <label>NIM Mahasiswa *</label>
+              <input type="text" v-model="formDO.nim" placeholder="Contoh: 05459131" required />
+            </div>
+            <div class="form-group-do">
+              <label>Nama Penerima *</label>
+              <input type="text" v-model="formDO.nama" placeholder="Nama Lengkap" required />
+            </div>
+            <div class="form-group-do">
+              <label>Ekspedisi *</label>
+              <select v-model="formDO.ekspedisi" required>
+                <option value="">-- Pilih Ekspedisi --</option>
+                <option v-for="eks in pengirimanList" :value="eks.nama">{{ eks.nama }}</option>
+              </select>
+            </div>
+            <div class="form-group-do" style="grid-column: span 2;">
+              <label>Paket Bahan Ajar *</label>
+              <select v-model="formDO.paket" required>
+                <option value="">-- Pilih Paket Modul --</option>
+                <option v-for="p in paketList" :value="p.kode">[{{ p.kode }}] — {{ p.nama }}</option>
+              </select>
+            </div>
+
+            <div v-if="selectedPaketDetail" class="detail-paket-box">
+              <p style="margin-bottom: 4px;"><strong>📦 Detail Isi Modul:</strong> {{ selectedPaketDetail.isi.join(', ') }}</p>
+              <p><strong>💰 Total Harga:</strong> Rp {{ selectedPaketDetail.harga.toLocaleString('id') }}</p>
+            </div>
+
+            <div class="form-group-do" style="grid-column: span 2;">
+              <label>Tanggal Pengiriman</label>
+              <input type="date" v-model="formDO.tanggalKirim" required />
+            </div>
+          </div>
+          <button type="submit" class="btn-primary" style="width: 100%; background: var(--green); border-color: var(--green);">
+            <i class="ti ti-circle-plus"></i> Submit & Generate DO
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <div v-if="statusLacak === 'found'" class="track-layout" style="animation: fadeIn 0.3s ease;">
+      <div>
+        <div class="tracking-header card-accent" style="background: white; border: 1.5px solid var(--gray-200); padding: 20px; border-radius: 13px;">
+          <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 12px; color: var(--gray-900);">Detail Pengiriman</h3>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+            <div><label style="font-size: 11px; color: var(--gray-400);">Nomor DO</label><p style="font-weight: 700; font-family: monospace; color: var(--blue-main);">{{ aktifDO }}</p></div>
+            <div><label style="font-size: 11px; color: var(--gray-400);">Nama Penerima</label><p style="font-weight: 600;">{{ hasilLacak.nama }}</p></div>
+            <div><label style="font-size: 11px; color: var(--gray-400);">NIM</label><p>{{ hasilLacak.nim }}</p></div>
+            <div><label style="font-size: 11px; color: var(--gray-400);">Ekspedisi Mitra</label><p>{{ hasilLacak.ekspedisi }}</p></div>
+            <div><label style="font-size: 11px; color: var(--gray-400);">Paket Terpilih</label><p>{{ hasilLacak.paket }}</p></div>
+            <div><label style="font-size: 11px; color: var(--gray-400);">Total Harga</label><p style="font-weight: 700;">Rp {{ hasilLacak.total.toLocaleString('id') }}</p></div>
+            <div><label style="font-size: 11px; color: var(--gray-400);">Tanggal Rilis Kirim</label><p>{{ hasilLacak.tanggalKirim }}</p></div>
+            <div><label style="font-size: 11px; color: var(--gray-400);">Status Pengiriman</label><p><span class="badge badge-selesai">{{ hasilLacak.status }}</span></p></div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="timeline-title" style="font-weight: bold; margin-bottom: 12px;">
+          <i class="ti ti-map-search" style="font-size:16px; vertical-align:-2px; margin-right:6px; color:var(--blue-main);"></i>
+          Rincian Perjalanan Dokumen Paket
+        </div>
+        <div class="timeline-wrap" style="background: white; padding: 20px; border-radius: 13px; border: 1.5px solid var(--gray-200);">
+          <div class="tl-item" v-for="(log, index) in hasilLacak.perjalanan" :key="index">
+            <div class="tl-dot"><div class="tl-dot-inner"></div></div>
+            <div class="tl-body">
+              <div class="tl-time">{{ log.waktu }}</div>
+              <div class="tl-card" :style="index === hasilLacak.perjalanan.length - 1 ? 'border-color: var(--green);' : ''">
+                <div class="tl-desc" :style="index === hasilLacak.perjalanan.length - 1 ? 'color: var(--green); font-weight: bold;' : ''">{{ log.keterangan }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div v-else-if="statusLacak === 'notfound'" class="card" style="animation: fadeIn 0.2s ease;">
+      <div class="empty-state" style="text-align: center; padding: 40px 20px;">
+        <i class="ti ti-package-off" style="font-size: 48px; color: var(--red); margin-bottom: 12px;"></i>
+        <p style="font-weight: bold; color: var(--gray-900);">Nomor Delivery Order Tidak Ditemukan</p>
+        <small style="color: var(--gray-400);">Pastikan format nomor seri sesuai (Contoh: DO2025-0001) atau silakan input order baru terlebih dahulu.</small>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script src="js/script.js"></script>
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+<script src="js/tracking-app.js?v=2"></script>
+
+<script>
+  // 1. Cek Sesi (Dijalankan sekali saja)
+  if (typeof cekSesi === 'function') cekSesi();
+
+  // 2. Skrip Dinamis untuk Nama Pengguna
+  let dataUser = sessionStorage.getItem('sitta_user');
+  
+  if (dataUser) {
+    let namaAsli = "Pengguna";
+    try {
+      let userObj = JSON.parse(dataUser);
+      namaAsli = userObj.nama || userObj.username || userObj.id || dataUser;
+    } catch(e) {
+      namaAsli = dataUser;
+    }
+
+    // Ubah nama di HTML
+    const elNama = document.getElementById('user-nama');
+    const elAvatar = document.getElementById('avatar-initial');
+    
+    if (elNama) elNama.innerText = namaAsli;
+    if (elAvatar) elAvatar.innerText = namaAsli.charAt(0).toUpperCase();
+  }
+</script>
+
+</body>
+</html>
